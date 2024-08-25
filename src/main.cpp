@@ -41,7 +41,7 @@ void setup() {
 
 unsigned status;
   status = bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);
-  //status = bmp.begin();
+
   if (!status) {
     //Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
     //                  "try a different address!"));
@@ -79,12 +79,19 @@ unsigned status;
 
 }
 
+void reset_measure(float acctemp) {
+   Hoehe=bmp.readAltitude(1013.25); 
+   hmax=0; 
+   acc0=acctemp; 
+   accmax=0;
+}
+
 void loop() {
   String outp;
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
- if (digitalRead(2)==false) {Hoehe=bmp.readAltitude(1013.25); hmax=0; acc0=a.acceleration.z+a.acceleration.x+a.acceleration.y; accmax=0;}
+ if (digitalRead(2)==false) {reset_measure(a.acceleration.z+a.acceleration.x+a.acceleration.y);}
 
   calc_h=bmp.readAltitude(1013.25)-Hoehe;
   //Serial.println(calc_h);
@@ -94,12 +101,11 @@ void loop() {
 
   if (abs(calc_h)>abs(hmax)) {hmax=calc_h;}
 
-  if (abs(calc_h)>0) mymil2=millis();
-
-  if (millis()-mymil2>30000) hmax=0;
-
   acc=a.acceleration.z+a.acceleration.x+a.acceleration.y - acc0;
   
+  if (abs(acc)>abs(accmax)) {accmax=acc;}
+
+
   display.clearDisplay();
   display.setCursor(0, 0);
 
@@ -113,6 +119,9 @@ void loop() {
   display.println(outp);
   outp = String(acc,1);
   display.print(outp);
+  display.print(" ");
+  outp = String(accmax,1);
+  display.println(outp);
   display.display();
 
 /*
@@ -175,5 +184,6 @@ Serial.print("Accel:");
   display.println("");
 
   display.display(); */
+  
   delay(100);
 }
