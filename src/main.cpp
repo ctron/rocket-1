@@ -8,7 +8,7 @@ Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
 Adafruit_BMP280 bmp; // I2C
 
 float Hoehe, calc_h, hmax;
-float acc, acc0, accmax;
+float acc, acc0, accmax, acc_ms;
 unsigned long mymil, mymil2;
 
 void setup() {
@@ -105,6 +105,8 @@ void loop() {
   
   if (abs(acc)>abs(accmax)) {accmax=acc;}
 
+  acc_ms= abs(1000/36/accmax);  // in 0 auf 100 in x sec :-)
+
 
   display.clearDisplay();
   display.setCursor(0, 0);
@@ -120,7 +122,7 @@ void loop() {
   outp = String(acc,1);
   display.print(outp);
   display.print(" ");
-  outp = String(accmax,1);
+  outp = String(acc_ms,2);
   display.println(outp);
   display.display();
 
